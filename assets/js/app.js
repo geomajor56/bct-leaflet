@@ -50,7 +50,7 @@ function sidebarClick(id) {
     map.addLayer(pointLayer)//.addLayer(museumLayer);
     var layer = markerClusters.getLayer(id);
     markerClusters.zoomToShowLayer(layer, function () {
-        map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 16);
+        map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 15);
         layer.fire("click");
     });
     /* Hide sidebar and go to the map on small screens */
@@ -69,7 +69,7 @@ osm = L.tileLayer(
     });
 
 watercolor =L.tileLayer.provider('Stamen.Watercolor')
-//MapQuestAerial =  L.tileLayer.provider('MapQuestOpen.Aerial'),
+
 
 
 /* Overlay Layers */
@@ -125,6 +125,20 @@ var blueTree = L.MakiMarkers.icon({
 });
 
 
+
+var parcels = new L.GeoJSON.AJAX("data/parcels.geojson",{
+    style: function (feature) {
+        return {
+            color: "red",
+            weight: 2,
+            fill: false,
+            opacity: 1,
+            clickable: false
+        };
+    },
+});
+
+
 /* Empty layer placeholder to add to layer control for listening when to add/remove points to markerClusters layer */
 var pointLayer = L.geoJson(null);
 var points = L.geoJson(null, {
@@ -152,10 +166,19 @@ var points = L.geoJson(null, {
         },
         onEachFeature: function (feature, layer) {
             if (feature.properties) {
-                var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.GRANTOR + "</td></tr>" + "<tr><th>Date Acquired</th><td>" + feature.properties.ACQUIRED + "</td></tr>" + "<tr><th>Habitat</th><td>" + feature.properties.HABITAT + "</td></tr>" + "<tr><th>Total Acres</th><td><a class='url-break' href='" + feature.properties.TOTAL + "' target='_blank'>" + feature.properties.TOTAL + "</a></td></tr>" + "<table>";
+
+
+                var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.GRANTOR + "</td></tr>" + "<tr><th>Date Acquired</th><td>" + feature.properties.ACQUIRED + "</td></tr>" + "<tr><th>Habitat</th><td>" + feature.properties.HABITAT + "</td></tr>" + "<tr><th>Total Acres</th><td>" + feature.properties.TOTAL + "</td></tr>" + "<table>";
                 layer.on({
                     click: function (e) {
-                        $("#feature-title").html(feature.properties.BCT);
+                        if (feature.properties.OWNER_TYPE === "A") {
+                              ownerType = "BCT Owned Land";
+                        } else if (feature.properties.OWNER_TYPE === "B") {
+                              ownerType = "Conservation Restriction on Private Land";
+                        } else {
+                             ownerType = 'Conservation Restriction on Town Land';
+                        }
+                        $("#feature-title").html(feature.properties.BCT+ '<h5>'+ ownerType+'</h5>');
                         $("#feature-info").html(content);
                         $("#featureModal").modal("show");
                         highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
@@ -177,24 +200,18 @@ var points = L.geoJson(null, {
                 });
             }
         }
-    })
-    ;
+    });
 $.getJSON("data/points.geojson", function (data) {
     points.addData(data);
     map.addLayer(pointLayer);
 });
 
-//var parcels = $.getJSON("data/parcels.geojson", function (data) {
-//            parcels.addData(data);
-//            map.addLayer();
-//});
 
 
 map = L.map("map", {
     zoom: 10,
     center: [40.702222, -73.979378],
-    //layers: [mapquestOSM, brewster, markerClusters, highlight],
-    layers: [osm, watercolor, brewster, markerClusters, highlight],
+    layers: [osm, brewster, parcels, markerClusters, highlight],
     zoomControl: false,
     attributionControl: false
 });
@@ -217,6 +234,16 @@ map.on("overlayremove", function (e) {
 /* Clear feature highlight when map is clicked */
 map.on("click", function (e) {
     highlight.clearLayers();
+});
+
+
+map.on('zoomend', function() {
+
+    if (map.getZoom() >14) {
+        map.addLayer(parcels)
+    } else {
+        map.removeLayer(parcels)
+    }
 });
 
 /* Attribution control */
@@ -255,8 +282,10 @@ if (document.body.clientWidth <= 767) {
 
 var baseLayers = {
     "Street Map": osm,
-    "Stamen Water Color": watercolor,
-    'MapQuest Aerial': L.tileLayer.provider('MapQuestOpen.Aerial')
+
+    'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery')
+
+
 };
 
 var groupedOverlays = {
@@ -345,15 +374,7 @@ $(document).one("ajaxStop", function () {
                 map._layers[datum.id].fire("click");
             }
         }
-        //if (datum.source === "Museums") {
-        //  if (!map.hasLayer(museumLayer)) {
-        //    map.addLayer(museumLayer);
-        //  }
-        //  map.setView([datum.lat, datum.lng], 17);
-        //  if (map._layers[datum.id]) {
-        //    map._layers[datum.id].fire("click");
-        //  }
-        //}
+
         if (datum.source === "GeoNames") {
             map.setView([datum.lat, datum.lng], 14);
         }
