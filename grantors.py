@@ -14,5 +14,5 @@ for feature in json_data['features']:
 with open('/var/www/bct-leaflet/data/my_file.json', 'w') as f:
     f.write(json.dumps(json_data))
 
-# for feature in json_data['features']:
-#     grantor = feature['properties']['GRANTOR'].split(" ")
+    # for feature in json_data['features']:
+    # grantor = feature['properties']['GRANTOR'].split(" ")

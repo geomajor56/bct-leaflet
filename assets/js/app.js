@@ -50,7 +50,7 @@ function sidebarClick(id) {
     map.addLayer(pointLayer)//.addLayer(museumLayer);
     var layer = markerClusters.getLayer(id);
     markerClusters.zoomToShowLayer(layer, function () {
-        map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 15);
+        map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 17);
         layer.fire("click");
     });
     /* Hide sidebar and go to the map on small screens */
@@ -64,12 +64,11 @@ function sidebarClick(id) {
 mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
 osm = L.tileLayer(
     'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //attribution: '&copy; ' + mapLink + ' Contributors',
-        maxZoom: 17
+        attribution: '&copy; ' + mapLink + ' Contributors',
+        maxZoom: 18
     });
 
-watercolor =L.tileLayer.provider('Stamen.Watercolor')
-
+watercolor = L.tileLayer.provider('Stamen.Watercolor')
 
 
 /* Overlay Layers */
@@ -125,8 +124,7 @@ var blueTree = L.MakiMarkers.icon({
 });
 
 
-
-var parcels = new L.GeoJSON.AJAX("data/parcels.geojson",{
+var parcels = new L.GeoJSON.AJAX("data/parcels.geojson", {
     style: function (feature) {
         return {
             color: "red",
@@ -142,79 +140,95 @@ var parcels = new L.GeoJSON.AJAX("data/parcels.geojson",{
 /* Empty layer placeholder to add to layer control for listening when to add/remove points to markerClusters layer */
 var pointLayer = L.geoJson(null);
 var points = L.geoJson(null, {
-        pointToLayer: function (feature, latlng) {
-            if (feature.properties.OWNER_TYPE === "A") {
-                return L.marker(latlng, {
-                    icon: greenTree,
-                    title: feature.properties.BCT,
-                    riseOnHover: true
-                });
-            } else if (feature.properties.OWNER_TYPE === "B") {
-                return L.marker(latlng, {
-                    icon: blueTree,
-                    title: feature.properties.BCT,
-                    riseOnHover: true
-                });
+    pointToLayer: function (feature, latlng) {
+        if (feature.properties.OWNER_TYPE === "A") {
+            return L.marker(latlng, {
+                icon: greenTree,
+                title: feature.properties.BCT,
+                riseOnHover: true
+            });
+        } else if (feature.properties.OWNER_TYPE === "B") {
+            return L.marker(latlng, {
+                icon: blueTree,
+                title: feature.properties.BCT,
+                riseOnHover: true
+            });
 
-            } else {
-                return L.marker(latlng, {
-                    icon: redTree,
-                    title: feature.properties.BCT,
-                    riseOnHover: true
-                });
-            }
-        },
-        onEachFeature: function (feature, layer) {
-            if (feature.properties) {
-
-
-                var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.GRANTOR + "</td></tr>" + "<tr><th>Date Acquired</th><td>" + feature.properties.ACQUIRED + "</td></tr>" + "<tr><th>Habitat</th><td>" + feature.properties.HABITAT + "</td></tr>" + "<tr><th>Total Acres</th><td>" + feature.properties.TOTAL + "</td></tr>" + "<table>";
-                layer.on({
-                    click: function (e) {
-                        if (feature.properties.OWNER_TYPE === "A") {
-                              ownerType = "BCT Owned Land";
-                        } else if (feature.properties.OWNER_TYPE === "B") {
-                              ownerType = "Conservation Restriction on Private Land";
-                        } else {
-                             ownerType = 'Conservation Restriction on Town Land';
-                        }
-                        $("#feature-title").html(feature.properties.BCT+ '<h5>'+ ownerType+'</h5>');
-                        $("#feature-info").html(content);
-                        $("#featureModal").modal("show");
-                        highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
-                            stroke: false,
-                            fillColor: "#00FFFF",
-                            fillOpacity: 0.7,
-                            radius: 10
-                        }));
-                    }
-                });
-                $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '"><td style="vertical-align: middle;"></td><td class="feature-name">' + layer.feature.properties.GRANTOR + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-                pointSearch.push({
-                    name: layer.feature.properties.BCT,
-                    address: layer.feature.properties.GRANTOR,
-                    source: "Theaters",
-                    id: L.stamp(layer),
-                    lat: layer.feature.geometry.coordinates[1],
-                    lng: layer.feature.geometry.coordinates[0]
-                });
-            }
+        } else {
+            return L.marker(latlng, {
+                icon: redTree,
+                title: feature.properties.BCT,
+                riseOnHover: true
+            });
         }
-    });
+    },
+    onEachFeature: function (feature, layer) {
+        if (feature.properties) {
+
+
+            var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.GRANTOR + "</td></tr>" + "<tr><th>Date Acquired</th><td>" + feature.properties.ACQUIRED + "</td></tr>" + "<tr><th>Habitat</th><td>" + feature.properties.HABITAT + "</td></tr>" + "<tr><th>Total Acres</th><td>" + feature.properties.TOTAL + "</td></tr>" + "<table>";
+            layer.on({
+                click: function (e) {
+                    if (feature.properties.OWNER_TYPE === "A") {
+                        ownerType = "BCT Owned Land";
+                    } else if (feature.properties.OWNER_TYPE === "B") {
+                        ownerType = "Conservation Restriction on Private Land";
+                    } else {
+                        ownerType = 'Conservation Restriction on Town Land';
+                    }
+                    $("#feature-title").html(feature.properties.BCT + '<h5>' + ownerType + '</h5>');
+                    $("#feature-info").html(content);
+                    $("#featureModal").modal("show");
+                    highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+                        stroke: false,
+                        fillColor: "#00FFFF",
+                        fillOpacity: 0.7,
+                        radius: 10
+                    }));
+                }
+            });
+            $("#feature-list tbody").append('<tr class="feature-row" id="' + L.stamp(layer) + '"><td style="vertical-align: middle;"></td><td class="feature-name">' + layer.feature.properties.GRANTOR + '</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+            pointSearch.push({
+                name: layer.feature.properties.BCT,
+                address: layer.feature.properties.GRANTOR,
+                source: "Theaters",
+                id: L.stamp(layer),
+                lat: layer.feature.geometry.coordinates[1],
+                lng: layer.feature.geometry.coordinates[0]
+            });
+        }
+    }
+});
 $.getJSON("data/points.geojson", function (data) {
     points.addData(data);
     map.addLayer(pointLayer);
 });
-
+function popUp(f,l){
+    var out = [];
+    if (f.properties){
+        for(key in f.properties){
+            out.push(key+": "+f.properties[key]);
+        }
+        l.bindPopup(out.join("<br />"));
+    }
+}
+var bmwOpen = new L.GeoJSON.AJAX("data/bmw_open.geojson",{onEachFeature:popUp});
 
 
 map = L.map("map", {
     zoom: 10,
-    center: [40.702222, -73.979378],
+    center: [41.74736621741609, -70.06891250610352],
     layers: [osm, brewster, parcels, markerClusters, highlight],
-    zoomControl: false,
+    //zoomControl: false,
     attributionControl: false
 });
+
+
+
+bmwOpen.addTo(map);
+
+
+L.control.navbar().addTo(map);
 
 /* Layer control listeners that allow for a single markerClusters layer */
 map.on("overlayadd", function (e) {
@@ -237,9 +251,9 @@ map.on("click", function (e) {
 });
 
 
-map.on('zoomend', function() {
+map.on('zoomend', function () {
 
-    if (map.getZoom() >14) {
+    if (map.getZoom() > 14) {
         map.addLayer(parcels)
     } else {
         map.removeLayer(parcels)
@@ -268,9 +282,9 @@ attributionControl.onAdd = function (map) {
 };
 map.addControl(attributionControl);
 
-var zoomControl = L.control.zoom({
-    position: "topleft"
-}).addTo(map);
+//var zoomControl = L.control.zoom({
+//    position: "topleft"
+//}).addTo(map);
 
 
 /* Larger screens get expanded layer control and visible sidebar */
