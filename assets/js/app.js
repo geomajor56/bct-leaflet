@@ -203,16 +203,79 @@ $.getJSON("data/points.geojson", function (data) {
     points.addData(data);
     map.addLayer(pointLayer);
 });
-function popUp(f,l){
+
+
+function popUp(f, l) {
     var out = [];
-    if (f.properties){
-        for(key in f.properties){
-            out.push(key+": "+f.properties[key]);
+    if (f.properties) {
+        for (key in f.properties) {
+            out.push(key + ": " + f.properties[key]);
         }
         l.bindPopup(out.join("<br />"));
     }
 }
-var bmwOpen = new L.GeoJSON.AJAX("data/bmw_open.geojson",{onEachFeature:popUp});
+
+function getColor(d) {
+    return d == 'L' ? '#addd8e' :
+        d == 'M' ? '#f7fcb9' :
+            d == 'N' ? '#E31A1C' :
+                d == 'P' ? '#2ca25f' :
+                    d == 'S' ? '#FD8D3C' :
+                        //d > 20   ? '#FEB24C' :
+                        //d > 10   ? '#FED976' :
+                        '#FFEDA0';
+}
+
+function style(feature) {
+    return {
+        weight: 1,
+        opacity: 1,
+        color: 'gray',
+        //dashArray: '3',
+        fillOpacity: 0.6,
+        fillColor: getColor(feature.properties.LEV_PROT)
+    };
+}
+
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera) {
+        layer.bringToFront();
+    }
+
+    //info.update(layer.feature.properties);
+}
+
+function resetHighlight(e) {
+    bmwOpen.resetStyle(e.target);
+    info.update();
+}
+
+function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+}
+
+function onEachFeatureOS(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
+}
+
+
+var bmwOpen = new L.GeoJSON.AJAX("data/bmw_open.geojson", {
+    style: style,
+    onEachFeature: onEachFeatureOS
+});
 
 
 map = L.map("map", {
@@ -222,7 +285,6 @@ map = L.map("map", {
     //zoomControl: false,
     attributionControl: false
 });
-
 
 
 bmwOpen.addTo(map);
@@ -296,10 +358,7 @@ if (document.body.clientWidth <= 767) {
 
 var baseLayers = {
     "Street Map": osm,
-
     'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery')
-
-
 };
 
 var groupedOverlays = {
