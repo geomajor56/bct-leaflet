@@ -241,10 +241,10 @@ function highlightFeature(e) {
     var layer = e.target;
 
     layer.setStyle({
-        weight: 5,
+        weight: 2,
         color: '#666',
-        dashArray: '',
-        fillOpacity: 0.7
+        //dashArray: '',
+        fillOpacity: 0.1
     });
 
     if (!L.Browser.ie && !L.Browser.opera) {
