@@ -133,7 +133,7 @@ var parcels = new L.GeoJSON.AJAX("data/parcels.geojson", {
             opacity: 1,
             clickable: false
         };
-    },
+    }
 });
 
 
@@ -205,25 +205,12 @@ $.getJSON("data/points.geojson", function (data) {
 });
 
 
-function popUp(f, l) {
-    var out = [];
-    if (f.properties) {
-        for (key in f.properties) {
-            out.push(key + ": " + f.properties[key]);
-        }
-        l.bindPopup(out.join("<br />"));
-    }
-}
-
 function getColor(d) {
-    return d == 'L' ? '#addd8e' :
-        d == 'M' ? '#f7fcb9' :
-            d == 'N' ? '#E31A1C' :
-                d == 'P' ? '#2ca25f' :
-                    d == 'S' ? '#FD8D3C' :
-                        //d > 20   ? '#FEB24C' :
-                        //d > 10   ? '#FED976' :
-                        '#FFEDA0';
+    return d == 'L' ? '#d9ef8b' :
+        d == 'T' ? '#fc8d59' :
+            d == 'N' ? '#d73027' :
+                d == 'P' ? '#1a9850' :
+                    '#000000';
 }
 
 function style(feature) {
@@ -232,8 +219,9 @@ function style(feature) {
         opacity: 1,
         color: 'gray',
         //dashArray: '3',
-        fillOpacity: 0.6,
+        fillOpacity: .9,
         fillColor: getColor(feature.properties.LEV_PROT)
+        //fillColor: 'none'
     };
 }
 
@@ -245,13 +233,14 @@ function highlightFeature(e) {
         color: '#666',
         //dashArray: '',
         fillOpacity: 0.1
+        //fillColor: 'none'
     });
 
     if (!L.Browser.ie && !L.Browser.opera) {
         layer.bringToFront();
     }
 
-    //info.update(layer.feature.properties);
+    info.update(layer.feature.properties);
 }
 
 function resetHighlight(e) {
@@ -278,6 +267,9 @@ var bmwOpen = new L.GeoJSON.AJAX("data/bmw_open.geojson", {
 });
 
 
+// end open    space parcels
+
+
 map = L.map("map", {
     zoom: 10,
     center: [41.74736621741609, -70.06891250610352],
@@ -286,6 +278,24 @@ map = L.map("map", {
     attributionControl: false
 });
 
+
+//  openspace parcels
+
+var info = L.control();
+
+info.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'info');
+    this.update();
+    return this._div;
+};
+
+info.update = function (props) {
+    this._div.innerHTML = '<h4>Brewster Open Space </h4>' + (props ?
+    '<b>' + props.SITE_NAME + '</b><br />' + props.FEE_OWNER //+ ' people / mi<sup>2</sup>'
+        : 'Hover over area');
+};
+
+info.addTo(map);
 
 bmwOpen.addTo(map);
 
@@ -358,16 +368,18 @@ if (document.body.clientWidth <= 767) {
 
 var baseLayers = {
     "Street Map": osm,
-    'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery')
+    'Esri WorldImagery': L.tileLayer.provider('Esri.WorldImagery'),
+    "OpenStreetMap": L.tileLayer.provider('OpenStreetMap.HOT'),
+    'Stamen Watercolor': L.tileLayer.provider('Stamen.Watercolor')
 };
 
 var groupedOverlays = {
     "BCT Land": {
         "<img src='assets/img/park-12.svg' width='24' height='28'>&nbsp;BCT Land": pointLayer
-        //"<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums": museumLayer
     },
     "Layers": {
-        "Brewster": brewster
+        "Brewster": brewster,
+        "Open Space (MassGIS)": bmwOpen
         //"Subway Lines": subwayLines
     }
 };
