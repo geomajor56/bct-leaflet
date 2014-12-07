@@ -6,7 +6,7 @@ L.Control.GroupedLayers = L.Control.extend({
 
     options: {
         collapsed: true,
-        position: 'topright',
+        position: 'bottomright',
         autoZIndex: true
     },
 

@@ -281,7 +281,9 @@ map = L.map("map", {
 
 //  openspace parcels
 
-var info = L.control();
+var info = L.control({
+    position: 'topright'
+});
 
 info.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'info');
@@ -290,7 +292,7 @@ info.onAdd = function (map) {
 };
 
 info.update = function (props) {
-    this._div.innerHTML = '<h4>Brewster Open Space </h4>' + (props ?
+    this._div.innerHTML = '<h4>MassGIS Open Space </h4>' + (props ?
     '<b>' + props.SITE_NAME + '</b><br />' + props.FEE_OWNER //+ ' people / mi<sup>2</sup>'
         : 'Hover over area');
 };
